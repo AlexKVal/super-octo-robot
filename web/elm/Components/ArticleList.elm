@@ -5,6 +5,10 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import List
 import Components.Article as Article
+import Http
+import Task
+import Json.Decode as Json exposing ((:=))
+import Debug
 
 
 type alias Model =
@@ -20,6 +24,8 @@ initialModel =
 type Msg
     = NoOp
     | Fetch
+    | FetchSucceed (List Article.Model)
+    | FetchFail Http.Error
 
 
 articles : List Article.Model
@@ -37,7 +43,48 @@ update msg model =
             ( model, Cmd.none )
 
         Fetch ->
-            ( { model | articles = articles }, Cmd.none )
+            ( model, fetchArticles )
+
+        FetchSucceed articleList ->
+            ( Model articleList, Cmd.none )
+
+        FetchFail error ->
+            case error of
+                Http.UnexpectedPayload errorMsg ->
+                    Debug.log errorMsg
+                        ( model, Cmd.none )
+
+                _ ->
+                    Debug.log "some other error"
+                        ( model, Cmd.none )
+
+
+fetchArticles : Cmd Msg
+fetchArticles =
+    let
+        url =
+            "/api/articles"
+    in
+        Task.perform FetchFail FetchSucceed (Http.get decodeArticleFetch url)
+
+
+decodeArticleFetch : Json.Decoder (List Article.Model)
+decodeArticleFetch =
+    Json.at [ "data" ] decodeArticleList
+
+
+decodeArticleList : Json.Decoder (List Article.Model)
+decodeArticleList =
+    Json.list decodeArticleData
+
+
+decodeArticleData : Json.Decoder Article.Model
+decodeArticleData =
+    Json.object4 Article.Model
+        ("title" := Json.string)
+        ("url" := Json.string)
+        ("posted_by" := Json.string)
+        ("posted_on" := Json.string)
 
 
 renderArticle : Article.Model -> Html a
