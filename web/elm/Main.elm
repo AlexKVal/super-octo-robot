@@ -42,8 +42,12 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    div [ class "elm-app" ]
-        [ App.map ArticleListMsg (ArticleList.view model.articleListModel) ]
+    div [ class "elm-app" ] [ articleListView model ]
+
+
+articleListView : Model -> Html Msg
+articleListView model =
+    App.map ArticleListMsg (ArticleList.view model.articleListModel)
 
 
 main : Program Never
