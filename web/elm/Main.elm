@@ -1,27 +1,37 @@
 module Main exposing (..)
 
-import Html exposing (Html, text, div)
+import Html exposing (..)
 import Html.App as App
 import Html.Attributes exposing (class)
 import Components.ArticleList as ArticleList
 
 
+type Msg
+    = ArticleListMsg ArticleList.Msg
+    | UpdateView Page
+
+
+type Page
+    = RootView
+    | ArticleListView
+
+
 type alias Model =
-    { articleListModel : ArticleList.Model }
+    { articleListModel : ArticleList.Model
+    , currentView : Page
+    }
 
 
 initialModel : Model
 initialModel =
-    { articleListModel = ArticleList.initialModel }
+    { articleListModel = ArticleList.initialModel
+    , currentView = RootView
+    }
 
 
 init : ( Model, Cmd Msg )
 init =
     ( initialModel, Cmd.none )
-
-
-type Msg
-    = ArticleListMsg ArticleList.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -33,6 +43,9 @@ update msg model =
                     ArticleList.update articleMsg model.articleListModel
             in
                 ( { model | articleListModel = updatedModel }, Cmd.map ArticleListMsg cmd )
+
+        UpdateView page ->
+            ( { model | currentView = page }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -47,11 +60,21 @@ view model =
 
 pageView : Model -> Html Msg
 pageView model =
-    articleView model
+    case model.currentView of
+        RootView ->
+            welcomeView
+
+        ArticleListView ->
+            articleListView model
 
 
-articleView : Model -> Html Msg
-articleView model =
+welcomeView : Html Msg
+welcomeView =
+    h2 [] [ text "Welcome to Elm Articles!" ]
+
+
+articleListView : Model -> Html Msg
+articleListView model =
     App.map ArticleListMsg (ArticleList.view model.articleListModel)
 
 
