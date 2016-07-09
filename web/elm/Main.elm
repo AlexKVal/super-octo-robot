@@ -42,11 +42,16 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    div [ class "elm-app" ] [ articleListView model ]
+    div [ class "elm-app" ] [ pageView model ]
 
 
-articleListView : Model -> Html Msg
-articleListView model =
+pageView : Model -> Html Msg
+pageView model =
+    articleView model
+
+
+articleView : Model -> Html Msg
+articleView model =
     App.map ArticleListMsg (ArticleList.view model.articleListModel)
 
 
