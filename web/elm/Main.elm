@@ -46,7 +46,16 @@ update msg model =
                 ( { model | articleListModel = updatedModel }, Cmd.map ArticleListMsg cmd )
 
         UpdateView page ->
-            ( { model | currentView = page }, Cmd.none )
+            let
+                updatedPageModel =
+                    { model | currentView = page }
+            in
+                case page of
+                    ArticleListView ->
+                        ( updatedPageModel, Cmd.map ArticleListMsg ArticleList.fetchArticles )
+
+                    _ ->
+                        ( updatedPageModel, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
