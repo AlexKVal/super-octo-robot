@@ -2,7 +2,8 @@ module Main exposing (..)
 
 import Html exposing (..)
 import Html.App as App
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, href)
+import Html.Events exposing (onClick)
 import Components.ArticleList as ArticleList
 
 
@@ -55,7 +56,7 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    div [ class "elm-app" ] [ pageView model ]
+    div [ class "elm-app" ] [ header, pageView model ]
 
 
 pageView : Model -> Html Msg
@@ -76,6 +77,23 @@ welcomeView =
 articleListView : Model -> Html Msg
 articleListView model =
     App.map ArticleListMsg (ArticleList.view model.articleListModel)
+
+
+header : Html Msg
+header =
+    div []
+        [ h1 [] [ text "Elm Articles" ]
+        , ul []
+            [ li []
+                [ a [ href "#", UpdateView RootView |> onClick ]
+                    [ text "Home" ]
+                ]
+            , li []
+                [ a [ href "#articles", UpdateView ArticleListView |> onClick ]
+                    [ text "Articles" ]
+                ]
+            ]
+        ]
 
 
 main : Program Never
