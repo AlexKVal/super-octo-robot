@@ -1,7 +1,7 @@
 module Components.ArticleList exposing (..)
 
-import Html exposing (Html, text, ul, li, div, h2, button)
-import Html.Attributes exposing (class)
+import Html exposing (..)
+import Html.Attributes exposing (class, href)
 import Html.Events exposing (onClick)
 import List
 import Components.Article as Article
@@ -9,6 +9,19 @@ import Http
 import Task
 import Json.Decode as Json exposing ((:=))
 import Debug
+
+
+type Msg
+    = NoOp
+    | Fetch
+    | FetchSucceed (List Article.Model)
+    | FetchFail Http.Error
+    | RouteToNewPage SubPage
+
+
+type SubPage
+    = ListView
+    | ShowView Article.Model
 
 
 type alias Model =
@@ -19,13 +32,6 @@ type alias Model =
 initialModel : Model
 initialModel =
     { articles = [] }
-
-
-type Msg
-    = NoOp
-    | Fetch
-    | FetchSucceed (List Article.Model)
-    | FetchFail Http.Error
 
 
 articles : List Article.Model
@@ -58,6 +64,9 @@ update msg model =
                     Debug.log "some other error"
                         ( model, Cmd.none )
 
+        _ ->
+            ( model, Cmd.none )
+
 
 fetchArticles : Cmd Msg
 fetchArticles =
@@ -87,12 +96,22 @@ decodeArticleData =
         ("posted_on" := Json.string)
 
 
-renderArticle : Article.Model -> Html a
+renderArticle : Article.Model -> Html Msg
 renderArticle article =
-    li [] [ Article.view article ]
+    li []
+        [ div [] [ Article.view article, articleLink article ] ]
 
 
-renderArticles : Model -> List (Html a)
+articleLink : Article.Model -> Html Msg
+articleLink article =
+    a
+        [ href ("#article/" ++ article.title ++ "/show")
+        , ShowView article |> RouteToNewPage |> onClick
+        ]
+        [ text " (Show) " ]
+
+
+renderArticles : Model -> List (Html Msg)
 renderArticles model =
     List.map renderArticle model.articles
 
